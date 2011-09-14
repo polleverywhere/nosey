@@ -1,5 +1,28 @@
 require 'spec_helper'
 
+describe EventMachine::Nosey::SocketServer do
+  include EM::Ventually
+
+  before(:each) do
+    @report = Nosey::Report.new do |r|
+      3.times do |n| 
+        r.probe_sets << Nosey::Probe::Set.new("Group #{n}") do |set|
+          set.touch 'generated-at'
+          set.increment 'hit'
+        end
+      end
+    end
+  end
+
+  it "should write report to socket" do
+    EventMachine::Nosey::SocketServer.start @report
+    Nosey::Test::ReadSocket.start('/tmp/nosey.socket').callback{|data|
+      @response = data
+    }
+    ly{ @response }.test{|response| YAML.load(response).is_a?(Hash) }
+  end
+end
+
 describe Nosey::Report do
   before(:each) do
     @report = Nosey::Report.new do |r|
@@ -21,7 +44,7 @@ describe Nosey::Report do
       @report.to_hash['Group 1'].keys.should include('generated-at', 'hit')
     end
   end
-  
+
   it "should generate report YML for string" do
     # Spot check for a probe key
     YAML.load(@report.to_s)['Group 2'].keys.should include('generated-at')
