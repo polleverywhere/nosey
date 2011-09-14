@@ -33,16 +33,19 @@ Instrument your Ruby app with nosey.
       include Nosey::Instrumentation
 
       def initialize
-        nosey.touch('started_at')
+        nosey.touch 'started_at'
       end
 
       def growl
-        nosey.increment('growls').touch('last_growled_at')
-        "Grrrrr"
+        nosey.increment 'growls'
+        nosey.touch 'last_growled_at'
+        "Grrrrr!"
       end
     end
     
-    PandaBear.growl
+    princess = PandaBear.new
+    princess.growl
+    princess.nosey.report  # Soon to be a fantastico report, prolly in YML
 
 When you fire Ruby this up, Nosey will open up a socket and report the stats.
 
