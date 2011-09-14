@@ -7,8 +7,9 @@ describe EventMachine::Nosey::SocketServer do
     @report = Nosey::Report.new do |r|
       3.times do |n| 
         r.probe_sets << Nosey::Probe::Set.new("Group #{n}") do |set|
-          set.touch 'generated-at'
           set.increment 'hit'
+          set.touch 'generated-at'
+          set.sample 'zie-number', 1
         end
       end
     end
@@ -72,6 +73,10 @@ describe Nosey::Probe::Set do
     @probes.touch('touched-at').should be_instance_of(Time)
   end
 
+  it "should sample" do
+    @probes.sample('foobers', 1).should be_instance_of(Hash)
+  end
+
   it "should get probe" do
     @probes.touch('barf')
     @probes.probe('barf').should be_instance_of(Nosey::Probe::Touch)
@@ -117,6 +122,40 @@ describe Nosey::Probe::Touch do
     @touch.value.should_not be_nil
   end
 end
+
+describe Nosey::Probe::Sampler do
+  before(:each) do
+    @counter = Nosey::Probe::Sampler.new
+    @counter.sample 1
+    @counter.sample 2
+    @counter.sample 3
+  end
+
+  it "should init hash" do
+    @counter.value.should be_instance_of(Hash)
+  end
+
+  it "should have avg" do
+    @counter.value['avg'].should eql(2)
+  end
+
+  it "should have sum" do
+    @counter.value['sum'].should eql(6)
+  end
+
+  it "should have min" do
+    @counter.value['min'].should eql(1)
+  end
+
+  it "should have max" do
+    @counter.value['max'].should eql(3)
+  end
+
+  it "should have count" do
+    @counter.value['count'].should eql(3)
+  end
+end
+
 
 describe Nosey::Instrumentation do
   before(:each) do

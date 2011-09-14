@@ -4,7 +4,6 @@ require 'eventmachine'
 module EventMachine
   module Nosey
     class SocketServer < EventMachine::Connection
-      Frame = "\n\n"
       Host = '/tmp/nosey.socket'
       Port = nil
 
@@ -111,6 +110,50 @@ module Nosey
       end
     end
 
+    # Calulcates a min, max, and avg for a given number of samples
+    class Sampler < Base
+      attr_reader :min, :max, :sum, :count
+
+      def initialize(*args)
+        reset
+        super(*args)
+      end
+
+      def sample(value)
+        @min = @max = value unless @min and @max
+
+        @min = value if value < @min
+        @max = value if value > @max
+        @sum   += value
+        @count += 1
+
+        to_hash
+      end
+
+      def avg
+        sum / count if count > 0 and sum
+      end
+
+      def to_hash
+        {
+          'max' => max,
+          'min' => min,
+          'sum' => sum,
+          'avg' => avg,
+          'count' => count
+        }
+      end
+
+      def value
+        to_hash
+      end
+
+      def reset
+        @min = @max = nil
+        @sum = @count = 0
+      end
+    end
+
     # Count up/down values.
     class Counter < Base
       def increment(by=1)
@@ -146,17 +189,22 @@ module Nosey
     end
 
     # Increment a counter probe
-    def increment(key,by=1,&blk)
+    def increment(key,by=1)
       ensure_probe(Probe::Counter, key).increment(by)
     end
 
     # Decrement a counter probe
-    def decrement(key,by=1,&blk)
+    def decrement(key,by=1)
       ensure_probe(Probe::Counter, key).decrement(by)
     end
 
+    # Sample a number and get a sum/avg/count/min/max
+    def sample(key,val)
+      ensure_probe(Probe::Sampler, key).sample(val)
+    end
+
     # Touch a timestamp probe
-    def touch(key,&blk)
+    def touch(key)
       ensure_probe(Probe::Touch, key).touch
     end
 
