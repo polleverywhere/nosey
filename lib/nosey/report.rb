@@ -1,12 +1,16 @@
 module Nosey
   class Report
-    attr_reader :probe_sets
-
     def initialize
       yield self if block_given?
       self
     end
 
+    # Make sure we end up with a flat array of probe_sets
+    def probe_sets=(probe_sets)
+      @probe_sets = Array(probe_sets).flatten
+    end
+
+    # Grab some probe_sets or an array
     def probe_sets
       @probe_sets ||= Array.new
     end
