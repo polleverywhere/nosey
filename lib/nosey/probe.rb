@@ -26,52 +26,42 @@ module Nosey
       end
     end
 
-    # Calulcates a min, max, and avg for a given number of samples
-    class Sampler < Base
-      attr_reader :min, :max, :sum, :count
-
-      def initialize(*args)
-        reset
-        super(*args)
-      end
-
+    class Average < Base
       def sample(value)
-        @min = @max = value unless @min and @max
-
-        @min = value if value < @min
-        @max = value if value > @max
+        @sum   ||= 0
+        @count ||= 0
         @sum   += value
         @count += 1
-
-        to_hash
-      end
-
-      def avg
-        sum / count if count > 0 and sum
-      end
-
-      def to_hash
-        {
-          'max' => max,
-          'min' => min,
-          'sum' => sum,
-          'avg' => avg,
-          'count' => count
-        }
       end
 
       def value
-        to_hash
+        @sum.to_f / @count.to_f if @sum and @count > 0
       end
+    end
 
-      def reset
-        @min = @max = nil
-        @sum = @count = 0
+    class Minimum < Base
+      def sample(value)
+        @value ||= value
+        @value = value if value < @value
+      end
+    end
+
+    class Maximum < Base
+      def sample(value)
+        @value ||= value
+        @value = value if value > @value
+      end
+    end
+
+    class Sum < Base
+      def sample(value)
+        @value ||= 0
+        @value += value
       end
     end
 
     # Count up/down values.
-    class Counter < Base
+    class Count < Base
       def increment(by=1)
         change by
       end
@@ -96,7 +86,7 @@ module Nosey
 
   # Contains a collection of probes that calculate velocities, counts, etc.
   class Probe::Set
-    attr_reader :name
+    attr_accessor :name
 
     def initialize(name)
       @name = name
@@ -106,22 +96,38 @@ module Nosey
 
     # Increment a counter probe
     def increment(key,by=1)
-      ensure_probe(Probe::Counter, key).increment(by)
+      ensure_probe(Probe::Count, key).increment(by)
     end
 
     # Decrement a counter probe
     def decrement(key,by=1)
-      ensure_probe(Probe::Counter, key).decrement(by)
+      ensure_probe(Probe::Count, key).decrement(by)
     end
 
     # Sample a number and get a sum/avg/count/min/max
-    def sample(key,val)
-      ensure_probe(Probe::Sampler, key).sample(val)
+    def avg(key,val)
+      ensure_probe(Probe::Average, key).sample(val)
     end
 
     # Touch a timestamp probe
     def touch(key)
       ensure_probe(Probe::Touch, key).touch
+    end
+
+    def min(key,value)
+      ensure_probe(Probe::Minimum, key).sample(value)
+    end
+
+    def max(key,value)
+      ensure_probe(Probe::Maximum, key).sample(value)
+    end
+
+    def avg(key,value)
+      ensure_probe(Probe::Average, key).sample(value)
+    end
+
+    def sum(key,value)
+      ensure_probe(Probe::Sum, key).sample(value)
     end
 
     # List of all the probes that are active

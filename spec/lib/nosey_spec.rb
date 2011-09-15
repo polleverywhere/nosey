@@ -9,7 +9,7 @@ describe EventMachine::Nosey::SocketServer do
         r.probe_sets << Nosey::Probe::Set.new("Group #{n}") do |set|
           set.increment 'hit'
           set.touch 'generated-at'
-          set.sample 'zie-number', 1
+          set.avg 'zie-number-avg', 1
         end
       end
     end

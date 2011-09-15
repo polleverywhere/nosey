@@ -21,8 +21,20 @@ describe Nosey::Probe::Set do
     @probes.touch('touched-at').should be_instance_of(Time)
   end
 
-  it "should sample" do
-    @probes.sample('foobers', 1).should be_instance_of(Hash)
+  it "should avg" do
+    @probes.avg('foobers', 1)
+  end
+
+  it "should sum" do
+    @probes.sum('foobers', 1)
+  end
+
+  it "should max" do
+    @probes.max('foobers', 1)
+  end
+
+  it "should min" do
+    @probes.max('foobers', 1)
   end
 
   it "should get probe" do
@@ -35,9 +47,39 @@ describe Nosey::Probe::Set do
   end
 end
 
-describe Nosey::Probe::Counter do
+describe Nosey::Probe do
+  it "should calculate sum" do
+    sum = Nosey::Probe::Sum.new
+    sum.sample(1)
+    sum.sample(2)
+    sum.value.should eql(3)
+  end
+
+  it "should calculate max" do
+    max = Nosey::Probe::Maximum.new
+    max.sample(1)
+    max.sample(3)
+    max.value.should eql(3)
+  end
+
+  it "should calculate minimum" do
+    min = Nosey::Probe::Minimum.new
+    min.sample(1)
+    min.sample(2)
+    min.value.should eql(1)
+  end
+
+  it "should calculate average" do
+    avg = Nosey::Probe::Average.new
+    avg.sample(1)
+    avg.sample(2)
+    avg.value.should eql(1.5)
+  end
+end
+
+describe Nosey::Probe::Count do
   before(:all) do
-    @counter = Nosey::Probe::Counter.new
+    @counter = Nosey::Probe::Count.new
   end
 
   it "should init null" do
@@ -68,38 +110,5 @@ describe Nosey::Probe::Touch do
   it "should touch" do
     @touch.touch
     @touch.value.should_not be_nil
-  end
-end
-
-describe Nosey::Probe::Sampler do
-  before(:each) do
-    @counter = Nosey::Probe::Sampler.new
-    @counter.sample 1
-    @counter.sample 2
-    @counter.sample 3
-  end
-
-  it "should init hash" do
-    @counter.value.should be_instance_of(Hash)
-  end
-
-  it "should have avg" do
-    @counter.value['avg'].should eql(2)
-  end
-
-  it "should have sum" do
-    @counter.value['sum'].should eql(6)
-  end
-
-  it "should have min" do
-    @counter.value['min'].should eql(1)
-  end
-
-  it "should have max" do
-    @counter.value['max'].should eql(3)
-  end
-
-  it "should have count" do
-    @counter.value['count'].should eql(3)
   end
 end

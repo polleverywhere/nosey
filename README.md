@@ -36,15 +36,18 @@ Instrument your Ruby app with nosey.
         nosey.touch 'started_at'
       end
 
-      def growl
-        nosey.increment 'growls'
-        nosey.touch 'last_growled_at'
-        "Grrrrr!"
+      def growl(volume=1)
+        nosey.touch 'last-growled-at'
+        nosey.increment 'growl-count'
+        nosey.avg 'growl-volume-avg', volume
+        nosey.min 'growl-volume-min', volume
+        nosey.max 'growl-volume-max', volume
+        "G#{'r' * volume}!"
       end
     end
     
     princess = PandaBear.new
-    princess.growl
+    10.times {|n| princess.growl rand * 5 }
     princess.nosey.report  # Soon to be a fantastico report, prolly in YML
 
 When you fire Ruby this up, Nosey will open up a socket and report the stats.

@@ -7,7 +7,10 @@ describe Nosey::Munin::Graph do
         r.probe_sets << Nosey::Probe::Set.new("Group #{n}") do |s|
           s.touch 'generated-at'
           s.increment 'hit'
-          s.sample 'chopper', 2
+          s.avg 'chopper-avg', 2
+          s.min 'chopper-min', 2
+          s.max 'chopper-max', 2
+          s.sum 'chopper-sum', 2
         end
       end
     end
@@ -36,7 +39,7 @@ describe Nosey::Munin::Graph do
     end
 
     it "should have labels" do
-      @text.scan(/[A-Za-z0-9_]+\.label .+\n/).should have(7).items
+      @text.scan(/[A-Za-z0-9_]+\.label .+\n/).should have(6).items
     end
   end
 
@@ -46,7 +49,7 @@ describe Nosey::Munin::Graph do
     end
 
     it "should have values" do
-      @text.scan(/[A-Za-z0-9_]+\.value .+\n/).should have(7).items
+      @text.scan(/[A-Za-z0-9_]+\.value .+\n/).should have(6).items
     end
   end
 end
