@@ -8,8 +8,6 @@ describe Nosey::Munin::Graph do
           s.touch 'generated-at'
           s.increment 'hit'
           s.sample 'chopper', 2
-          s.sample 'chopper', 1
-          s.sample 'chopper', 0
         end
       end
     end
