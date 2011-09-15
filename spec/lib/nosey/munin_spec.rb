@@ -75,5 +75,7 @@ describe Nosey::Munin::Graph do
     it "should sample" do
       graph(@report).should match(/chopper_avg\.value \d+/)
     end
+
+    it "should read from socket"
   end
 end
