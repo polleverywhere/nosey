@@ -52,4 +52,28 @@ describe Nosey::Munin::Graph do
       @text.scan(/[A-Za-z0-9_]+\.value .+\n/).should have(6).items
     end
   end
+
+  context "munin client" do
+    def graph(report, *argv)
+      out = StringIO.new
+
+      Nosey::Munin.graph argv, out do |g|
+        g.data report.to_s
+        g.category 'Bananas'
+        g.title 'Fruit Fly Charts'
+        g.vertical_label 'Wing speed (beats per second'
+      end
+
+      out.rewind
+      out.read
+    end
+
+    it "should configure" do
+      graph(@report, 'configure').should match(/graph_title Fruit Fly Charts/)
+    end
+
+    it "should sample" do
+      graph(@report).should match(/chopper_avg\.value \d+/)
+    end
+  end
 end

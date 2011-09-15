@@ -3,15 +3,15 @@ require 'socket'
 module Nosey
   module Munin
     # Print the output of the munin graph to $stdout
-    def self.graph(args=ARGV,&block)
-      client = Graph::DSL.new(&block).client
+    def self.graph(args=ARGV,out=$stdio,&block)
+      graph = Graph::DSL.new(&block).graph
 
       # Munin passes configure into this to figure out the graph.
-      puts case args.first
+      out.puts case args.first
       when 'configure'
-        client.configure
+        graph.configure
       else
-        client.sample
+        graph.sample
       end
     end
 
@@ -20,7 +20,7 @@ module Nosey
       attr_accessor :data, :title, :vertical_label, :category
       attr_writer :probe_set
 
-      def initialize(data)
+      def initialize(data=nil)
         @data = data
         @category = 'App' # Default it to app duuude
         yield self if block_given?
@@ -77,7 +77,6 @@ module Nosey
         report[@probe_set ||= report.keys.first]
       end
 
-
       def title
         @title ||= probe_set
       end
@@ -110,6 +109,11 @@ module Nosey
     class Graph::DSL
       Category = 'App'
 
+      def initialize(&block)
+        block.arity > 1 ? block.call(self) : instance_eval(&block)
+        self
+      end
+
       def socket(host=EventMachine::Nosey::SocketServer::Host,port=EventMachine::Nosey::SocketServer::Port)
         @host, @port = host, port
         self
@@ -121,6 +125,21 @@ module Nosey
         self
       end
 
+      def title(title)
+        @title = title
+        self
+      end
+
+      def vertical_label(vertical_label)
+        @vertical_label = vertical_label
+        self
+      end
+
+      def data(data)
+        @data = data
+        self
+      end
+
       # Category this thing will be in
       def category(category=Category)
         @category = category
@@ -129,14 +148,20 @@ module Nosey
 
       # Configure an instance of a client.
       def graph
-        Graph.new do |c|
-          c.data = read_socket
-          c.probe_set = probe_Set
-          c.category = category
+        Graph.new read_data do |c|
+          c.probe_set = @probe_set
+          c.category = @category
+          c.title = @title
+          c.vertical_label = @vertical_label
         end
       end
 
     private
+      # Let us drop a string right in here in case we need to test some stuff
+      def read_data
+        @data || read_socket
+      end
+
       # Read the report YAML data from the socket
       def read_socket
         UNIXSocket.new(@host).gets("\n\n")
