@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'bundler/setup'
+require 'nosey'
+require 'eventmachine'
+
+trap('QUIT') { EM.stop }
+
+EM.run {
+  probes = Nosey::Probe::Set.new('my_probe_set')
+
+  puts "Starting nosey test server"
+  EventMachine::Nosey::SocketServer.start(probes.report, '/tmp/nosey_test.socket')
+
+  EM::add_periodic_timer(1) do
+    probes.increment 'ticks'
+    probes.avg 'avg', rand
+    probes.min 'min', rand
+    probes.max 'max', rand
+    puts %w[tick tock][probes.probe('ticks').value % 2]
+  end
+}

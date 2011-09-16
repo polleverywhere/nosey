@@ -1,14 +1,21 @@
 require 'socket'
+require 'yaml'
+require 'stringio'
 
 module Nosey
   module Munin
+    # Various commands available to munin
+    module Argument
+      Configuration = 'config'
+    end
+
     # Print the output of the munin graph to $stdout
-    def self.graph(args=ARGV,out=$stdio,&block)
+    def self.graph(args=ARGV,out=$stdout,&block)
       graph = Graph::DSL.new(&block).graph
 
       # Munin passes configure into this to figure out the graph.
       out.puts case args.first
-      when 'configure'
+      when Argument::Configuration
         graph.configure
       else
         graph.sample

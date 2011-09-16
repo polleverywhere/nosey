@@ -69,7 +69,7 @@ describe Nosey::Munin::Graph do
     end
 
     it "should configure" do
-      graph(@report, 'configure').should match(/graph_title Fruit Fly Charts/)
+      graph(@report, 'config').should match(/graph_title Fruit Fly Charts/)
     end
 
     it "should sample" do

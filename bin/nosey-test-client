@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'bundler/setup'
+require 'nosey'
+
+Nosey::Munin.graph do
+  socket          '/tmp/nosey_test.socket'
+  category        'App'
+  title           'My Cool Chart'
+  vertical_label  'Response Time (seconds)'
+end
