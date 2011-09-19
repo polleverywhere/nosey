@@ -9,4 +9,8 @@ Nosey::Munin.graph do
   category        'App'
   title           'My Cool Chart'
   vertical_label  'Response Time (seconds)'
+  filter do |name|
+    # Only show these 3 dudes
+    %w[min max avg].include? name
+  end
 end

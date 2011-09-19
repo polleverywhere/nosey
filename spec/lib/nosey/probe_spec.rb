@@ -42,38 +42,88 @@ describe Nosey::Probe::Set do
     @probes.probe('barf').should be_instance_of(Nosey::Probe::Touch)
   end
 
+  it "should reset" do
+    @probes.touch('barf')
+    @probes.reset
+    @probes.probe('barf').value.should be_nil
+  end
+
   it "should return report" do
     @probes.report.probe_sets.first.should eql(@probes)
   end
 end
 
-describe Nosey::Probe do
-  it "should calculate sum" do
-    sum = Nosey::Probe::Sum.new
-    sum.sample(1)
-    sum.sample(2)
-    sum.value.should eql(3)
+describe Nosey::Probe::Sum do
+  before(:all) do
+    @sum = Nosey::Probe::Sum.new
   end
 
-  it "should calculate max" do
-    max = Nosey::Probe::Maximum.new
-    max.sample(1)
-    max.sample(3)
-    max.value.should eql(3)
+  it "should sum" do
+    @sum.sample(1)
+    @sum.sample(2)
+    @sum.value.should eql(3)
   end
 
-  it "should calculate minimum" do
-    min = Nosey::Probe::Minimum.new
-    min.sample(1)
-    min.sample(2)
-    min.value.should eql(1)
+  it "should reset" do
+    @sum.sample(1)
+    @sum.sample(2)
+    @sum.reset
+    @sum.value.should be_nil
+  end
+end
+
+describe Nosey::Probe::Maximum do
+  before(:all) do
+    @max = Nosey::Probe::Maximum.new
   end
 
-  it "should calculate average" do
-    avg = Nosey::Probe::Average.new
-    avg.sample(1)
-    avg.sample(2)
-    avg.value.should eql(1.5)
+  it "should know max" do
+    @max.sample(1)
+    @max.sample(3)
+    @max.value.should eql(3)
+  end
+
+  it "should reset" do
+    @max.sample(1)
+    @max.reset
+    @max.value.should be_nil
+  end
+end
+
+describe Nosey::Probe::Minimum do
+  before(:all) do
+    @min = Nosey::Probe::Minimum.new
+  end
+
+  it "should know max" do
+    @min.sample(1)
+    @min.sample(2)
+    @min.value.should eql(1)
+  end
+
+  it "should reset" do
+    @min.sample(2)
+    @min.reset
+    @min.value.should be_nil
+  end
+end
+
+describe Nosey::Probe::Average do
+  before(:all) do
+    @avg = Nosey::Probe::Average.new
+  end
+
+  it "should know avg" do
+    @avg.sample(1)
+    @avg.sample(2)
+    @avg.value.should eql(1.5)
+  end
+
+  it "should reset" do
+    @avg.sample(1)
+    @avg.sample(2)
+    @avg.reset
+    @avg.value.should be_nil
   end
 end
 
@@ -96,6 +146,12 @@ describe Nosey::Probe::Count do
 
   it "should set" do
     @counter.set(0).should eql(0)
+  end
+
+  it "should reset" do
+    @counter.increment(1)
+    @counter.reset
+    @counter.value.should be_nil
   end
 end
 

@@ -13,7 +13,7 @@ EM.run {
   puts "Starting nosey test server"
   EventMachine::Nosey::SocketServer.start(probes.report, '/tmp/nosey_test.socket')
 
-  EM::add_periodic_timer(1) do
+  EM::add_periodic_timer(2) do
     probes.increment 'ticks'
     probes.avg 'avg', rand
     probes.min 'min', rand

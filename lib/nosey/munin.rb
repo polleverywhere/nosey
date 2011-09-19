@@ -24,7 +24,7 @@ module Nosey
 
     # Parse a Nosey socket for Munin
     class Graph
-      attr_accessor :data, :title, :vertical_label, :category
+      attr_accessor :data, :title, :vertical_label, :category, :filter
       attr_writer :probe_set
 
       def initialize(data=nil)
@@ -67,13 +67,16 @@ module Nosey
       def munin_hash(root_key=nil,hash=self.probe_set)
         # TODO perform processing for more complicated probes, like samplers, etc
         hash.reduce({}) do |memo, (name, value)|
-          case value
-          when Hash # Its nested, go deep! Oooo yeah!
-            munin_hash(format_field(root_key, name), value).each do |name, value|
-              memo[format_field(root_key, name)] = value.to_a
+          # If there's NOt a filter OR we have a filter and it filters...
+          if !filter or (filter and filter.call(name))
+            case value
+            when Hash # Its nested, go deep! Oooo yeah!
+              munin_hash(format_field(root_key, name), value).each do |name, value|
+                memo[format_field(root_key, name)] = value.to_a
+              end
+            else # Its cool, return this mmmkay? Sheesh man
+              memo[format_field(root_key, name)] = [name, value]
             end
-          else # Its cool, return this mmmkay? Sheesh man
-            memo[format_field(root_key, name)] = [name, value]
           end
           memo
         end
@@ -88,10 +91,12 @@ module Nosey
         @title ||= probe_set
       end
 
-    private
-      def process_filter(hash)
-        hash.select{}
+      # Setup a filter from the graphing DSL so that we can grep out specific probes
+      def filter(&block)
+        block_given? ? @filter = block : @filter
       end
+
+    private
       # http://munin-monitoring.org/wiki/notes_on_datasource_names
       # Notes on field names
       # Each data source in a plugin must be identified by a field name. The following describes the name of the field:
@@ -114,6 +119,12 @@ module Nosey
 
     # A little DSL that lets us set the socket and report name we'll read
     class Graph::DSL
+      # We use this command to read Nosey data from the socket, but more
+      # importantly, reset it so that when we come back around the next time
+      # we can grab all the data that's occured since that time.
+      ResetCommand = "RESET\n"
+
+      # Default munin category. Zie app!
       Category = 'App'
 
       def initialize(&block)
@@ -147,6 +158,11 @@ module Nosey
         self
       end
 
+      def filter(&block)
+        @filter = block
+        self
+      end
+
       # Category this thing will be in
       def category(category=Category)
         @category = category
@@ -160,6 +176,7 @@ module Nosey
           c.category = @category
           c.title = @title
           c.vertical_label = @vertical_label
+          c.filter = @filter
         end
       end
 
@@ -171,7 +188,10 @@ module Nosey
 
       # Read the report YAML data from the socket
       def read_socket
-        UNIXSocket.new(@host).gets("\n\n")
+        p ResetCommand
+        socket = UNIXSocket.new(@host)
+        socket.puts(ResetCommand)
+        socket.gets("\n\n")
       end
     end
   end

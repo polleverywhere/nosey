@@ -43,6 +43,13 @@ describe Nosey::Munin::Graph do
     end
   end
 
+  it "should filter" do
+    @graph.filter do |name|
+      name =~ /chopper-sum|chopper-avg/
+    end
+    @graph.munin_hash.should have(2).items
+  end
+
   context "sample" do
     before(:each) do
       @text = @graph.sample

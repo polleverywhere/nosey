@@ -29,7 +29,7 @@ module Nosey
       end
 
       def self.start(host,port=nil)
-        EventMachine::connect host, port, self
+        EventMachine::connect(host, port, self)
       end
 
     private

@@ -27,15 +27,24 @@ module Nosey
     end
 
     class Average < Base
+      def initialize(*args)
+        super(*args)
+        reset
+      end
+
       def sample(value)
-        @sum   ||= 0
-        @count ||= 0
         @sum   += value
         @count += 1
       end
 
       def value
         @sum.to_f / @count.to_f if @sum and @count > 0
+      end
+
+      def reset
+        @sum   = 0
+        @count = 0
+        @count = 0
       end
     end
 
@@ -145,6 +154,11 @@ module Nosey
       Report.new do |r|
         r.probe_sets << self
       end
+    end
+
+    # Reset the values in all the probes
+    def reset
+      probes.each{|_, probe| probe.reset }
     end
 
   private

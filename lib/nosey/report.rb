@@ -29,6 +29,11 @@ module Nosey
       }
     end
 
+    # Reset all the counters in each probe.
+    def reset
+      probe_sets.each(&:reset)
+    end
+
     # String representation of all the probe_sets that's suitable for 
     # flushing out over a socket.
     def to_s
