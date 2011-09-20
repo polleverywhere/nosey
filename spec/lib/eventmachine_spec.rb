@@ -23,7 +23,7 @@ describe EventMachine::Nosey::SocketServer do
     socket.callback{|data|
       @resp = data
     }
-    socket.send_data("READ\n")
+    socket.send_data("READ\nQUIT\n")
 
     ly{2}.test{|count| YAML.load(@resp)['Group 0']['hit'] == count }
   end
@@ -36,10 +36,10 @@ describe EventMachine::Nosey::SocketServer do
     s1 = Nosey::Test::ReadSocket.start('/tmp/nosey.socket')
     s2 = Nosey::Test::ReadSocket.start('/tmp/nosey.socket')
 
-    s1.send_data("RESET\n")
+    s1.send_data("RESET\nQUIT\n")
     s1.callback{|data|
       @r1 = data
-      s2.send_data("READ\n")
+      s2.send_data("READ\nQUIT\n")
       s2.callback{|data|
         @r2 = data
       }

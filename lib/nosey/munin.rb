@@ -122,7 +122,7 @@ module Nosey
       # We use this command to read Nosey data from the socket, but more
       # importantly, reset it so that when we come back around the next time
       # we can grab all the data that's occured since that time.
-      ResetCommand = "RESET\n"
+      ResetCommand = "RESET\nQUIT\n"
 
       # Default munin category. Zie app!
       Category = 'App'
@@ -188,7 +188,6 @@ module Nosey
 
       # Read the report YAML data from the socket
       def read_socket
-        p ResetCommand
         socket = UNIXSocket.new(@host)
         socket.puts(ResetCommand)
         socket.gets("\n\n")

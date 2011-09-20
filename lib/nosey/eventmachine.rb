@@ -1,10 +1,12 @@
 require 'eventmachine'
+require 'strscan'
 
 module EventMachine
   module Nosey
     class SocketServer < EventMachine::Connection
       Host = '/tmp/nosey.socket'
       Port = nil
+      CommandPattern = /[A-Z]+\n/
 
       attr_accessor :report
 
@@ -15,21 +17,25 @@ module EventMachine
 
       def receive_data(data)
         buffer << data
-        # Stop buffering if a newline is detected and process command
-        process_command buffer.strip if data =~ /\n/
+        # Look for commands in the buffer and process them
+        # TODO - For higher performance, queue this in a Em::Queue
+        while command = buffer.scan(CommandPattern)
+          process_command command
+        end
       end
 
       def process_command(command)
-        case command
+        case command.strip
         when 'READ' # This is for more normal uses cases where you want to watch stats
           send_data report.to_s
         when 'RESET' # This is used primarly by munin, or other tools that can't track state.
           send_data report.to_s
           report.reset
+        when 'QUIT'
+          close_connection_after_writing
         else
-          send_data "No Comprende. send 'read' to see stats or 'reset' to read and reset."
+          send_data "No Comprende. READ, RESET, o QUIT."
         end
-        close_connection_after_writing
       end
 
       # A nice short-cut for peeps who aren't familar with EM to fire up
@@ -40,7 +46,7 @@ module EventMachine
 
     private
       def buffer
-        @buffer ||= ""
+        @buffer ||= StringScanner.new("")
       end
     end
   end
