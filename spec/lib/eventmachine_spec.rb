@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'yaml'
+require 'psych'
 
 describe EventMachine::Nosey::SocketServer do
   include EM::Ventually
@@ -25,7 +25,7 @@ describe EventMachine::Nosey::SocketServer do
     }
     socket.send_data("READ\nQUIT\n")
 
-    ly{2}.test{|count| YAML.load(@resp)['Group 0']['hit'] == count }
+    ly{2}.test{|count| Psych.load(@resp)['Group 0']['hit'] == count }
   end
 
   it "should reset report and read data with RESET command" do
@@ -45,6 +45,6 @@ describe EventMachine::Nosey::SocketServer do
       }
     }
 
-    ly{nil}.test{|count| YAML.load(@r2)['Group 0']['hit'] == count }
+    ly{nil}.test{|count| Psych.load(@r2)['Group 0']['hit'] == count }
   end
 end

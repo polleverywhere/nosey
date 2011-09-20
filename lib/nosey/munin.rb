@@ -1,5 +1,5 @@
 require 'socket'
-require 'yaml'
+require 'psych'
 require 'stringio'
 
 module Nosey
@@ -113,7 +113,7 @@ module Nosey
       end
 
       def report
-        @report ||= YAML.load(@data)
+        @report ||= Psych.load(@data)
       end
     end
 

@@ -1,3 +1,5 @@
+require 'psych'
+
 module Nosey
   class Report
     def initialize
@@ -37,7 +39,7 @@ module Nosey
     # String representation of all the probe_sets that's suitable for 
     # flushing out over a socket.
     def to_s
-      to_hash.to_yaml
+      Psych.dump to_hash
     end
   end
 end

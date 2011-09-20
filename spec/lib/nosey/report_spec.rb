@@ -24,6 +24,6 @@ describe Nosey::Report do
 
   it "should generate report YML for string" do
     # Spot check for a probe key
-    YAML.load(@report.to_s)['Group 2'].keys.should include('generated-at')
+    Psych.load(@report.to_s)['Group 2'].keys.should include('generated-at')
   end
 end
