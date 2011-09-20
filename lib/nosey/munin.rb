@@ -1,5 +1,4 @@
 require 'socket'
-require 'psych'
 require 'stringio'
 
 module Nosey

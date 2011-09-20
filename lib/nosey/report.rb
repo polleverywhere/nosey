@@ -1,5 +1,3 @@
-require 'psych'
-
 module Nosey
   class Report
     def initialize
