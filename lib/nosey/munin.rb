@@ -1,5 +1,6 @@
 require 'socket'
 require 'stringio'
+require 'psych'
 
 module Nosey
   module Munin

@@ -22,7 +22,8 @@ module Nosey
       # Drop the probes into the report
       probe_sets.inject({}) { |report, set|
         report[set.name.to_s] = set.probes.inject({}) { |memo, (_, probe)|
-          memo[probe.name] = probe.value
+          # round the values to 2 decimal places
+          memo[probe.name] = (probe.value.to_f * 100).round().to_f/100
           memo
         }
         report
