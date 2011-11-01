@@ -13,4 +13,5 @@ Nosey::Munin.graph do
     # Only show these 3 dudes
     %w[min max avg].include? name
   end
+  labels ({"min" => "Minimum", "max" => "Maximus", "avg" => "Average Joe"})
 end

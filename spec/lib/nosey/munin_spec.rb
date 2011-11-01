@@ -18,6 +18,7 @@ describe Nosey::Munin::Graph do
     @graph = Nosey::Munin::Graph.new(@report.to_s) do |g|
       g.title = "Test Graph"
       g.vertical_label = "Response times"
+      g.labels = {"min" => "Min", "max" => "Max", "avg" => "Avg"}
     end
   end
 
@@ -39,7 +40,7 @@ describe Nosey::Munin::Graph do
     end
 
     it "should have labels" do
-      @text.scan(/[A-Za-z0-9_]+\.label .+\n/).should have(6).items
+      @text.scan(/[A-Za-z0-9_]+\.label .+\n/).should have(3).items
     end
   end
 
@@ -69,6 +70,7 @@ describe Nosey::Munin::Graph do
         g.category 'Bananas'
         g.title 'Fruit Fly Charts'
         g.vertical_label 'Wing speed (beats per second'
+        g.labels ({"min" => "min"})
       end
 
       out.rewind

@@ -11,20 +11,20 @@ module Nosey
 
     # Print the output of the munin graph to $stdout
     def self.graph(args=ARGV,out=$stdout,&block)
-      graph = Graph::DSL.new(&block).graph
+      dsl = Graph::DSL.new(&block)
 
-      # Munin passes configure into this to figure out the graph.
+      # Munin passes configure into this to figure out the graph.       
       out.puts case args.first
       when Argument::Configuration
-        graph.configure
+        dsl.graph(true).configure
       else
-        graph.sample
+        dsl.graph.sample
       end
     end
 
     # Parse a Nosey socket for Munin
     class Graph
-      attr_accessor :data, :title, :vertical_label, :category, :filter
+      attr_accessor :data, :title, :vertical_label, :category, :filter, :labels
       attr_writer :probe_set
 
       def initialize(data=nil)
@@ -45,9 +45,11 @@ module Nosey
         body.puts "graph_title #{title}"
         body.puts "graph_category #{category}"
         body.puts "graph_vlabel #{vertical_label}"
-        munin_hash.each do |field, (label, value)|
+        
+        (@labels || {}).each do |field, label|
           body.puts "#{field}.label #{label}"
         end
+        
         body.rewind
         body.read
       end
@@ -153,6 +155,11 @@ module Nosey
         self
       end
 
+      def labels(labels)
+        @labels = labels
+        self
+      end
+
       def data(data)
         @data = data
         self
@@ -170,13 +177,14 @@ module Nosey
       end
 
       # Configure an instance of a client.
-      def graph
-        Graph.new read_data do |c|
+      def graph(configure=false)
+        Graph.new (configure ? nil : read_data) do |c|
           c.probe_set = @probe_set
           c.category = @category
           c.title = @title
           c.vertical_label = @vertical_label
           c.filter = @filter
+          c.labels = @labels
         end
       end
 
