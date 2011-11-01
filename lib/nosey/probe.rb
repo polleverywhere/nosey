@@ -38,7 +38,7 @@ module Nosey
       end
 
       def value
-        @sum.to_f / @count.to_f if @sum and @count > 0
+        (@sum.to_f / @count.to_f * 100).round().to_f / 100 if @count > 0
       end
 
       def reset
